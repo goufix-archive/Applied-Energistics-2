@@ -64,7 +64,7 @@ public class MathExpressionParser {
                     }
                     wasNumberOrRightBracket = true;
                 }
-                case '+', '-', '*', '/' -> {
+                case '+', '-', '*', '/', '^' -> {
                     while (!operatorStack.isEmpty()) {
                         char operator = operatorStack.peek();
                         if (operator != '(' && precedenceCheck(operator, currentOperator)) {
@@ -119,6 +119,13 @@ public class MathExpressionParser {
                                     number.push(left.divide(right, 8, RoundingMode.FLOOR));
                                 }
                             }
+                            case '^' -> {
+                                if (right.compareTo(BigDecimal.ZERO) < 0) {
+                                    return Optional.empty(); // negative exponent
+                                } else {
+                                    number.push(left.pow(right.intValue()));
+                                }
+                            }
                             case '(', ')' -> {
                                 return Optional.empty(); // should not have any remaining parenthesis in the stack
                             }
@@ -148,8 +155,9 @@ public class MathExpressionParser {
     private static int getPrecedence(char operator) {
         return switch (operator) {
             case 'u' -> 0;
-            case '/', '*' -> 1;
-            case '+', '-' -> 2;
+            case '^' -> 1;
+            case '/', '*' -> 2;
+            case '+', '-' -> 3;
             default -> throw new IllegalArgumentException("Invalid Operator : " + operator);
         };
     }
